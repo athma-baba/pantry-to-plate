@@ -10,6 +10,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // Local async-storage AAR repository (packaged with the module)
+        maven {
+            url uri("$rootDir/../node_modules/@react-native-async-storage/async-storage/android/local_repo")
+        }
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
@@ -17,5 +22,16 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // Local async-storage AAR repository (packaged with the module)
+        maven {
+            url uri("$rootDir/../node_modules/@react-native-async-storage/async-storage/android/local_repo")
+        }
+        maven { url 'https://jitpack.io' }
+    }
 
+}
 apply plugin: "com.facebook.react.rootproject"
