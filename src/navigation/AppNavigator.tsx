@@ -1,27 +1,35 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
 import PantryScreen from '../screens/PantryScreen';
 import RecipesScreen from '../screens/RecipesScreen';
 import ShoppingListScreen from '../screens/ShoppingListScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import HomeScreen from '../screens/HomeScreen';
+import ScanScreen from '../screens/ScanScreen';
+import CookScreen from '../screens/CookScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import ReviewDetectedScreen from '../screens/ReviewDetectedScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
+    Home: '🏠',
+    Scan: '📷',
+    Cook: '🍳',
     Pantry: '🥦',
-    Recipes: '🍳',
-    'Shopping List': '🛒',
-    Settings: '⚙️',
+    Profile: '👤',
   };
   return (
     <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icons[label] ?? '•'}</Text>
   );
 }
 
-export default function AppNavigator() {
+function MainTabs() {
   const { isDark } = useTheme();
 
   const tabBarStyle = {
@@ -42,10 +50,20 @@ export default function AppNavigator() {
         headerTintColor: isDark ? '#f0f0f0' : '#111',
         headerTitleStyle: { fontWeight: '700' },
       })}>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Scan" component={ScanScreen} />
+      <Tab.Screen name="Cook" component={CookScreen} />
       <Tab.Screen name="Pantry" component={PantryScreen} />
-      <Tab.Screen name="Recipes" component={RecipesScreen} />
-      <Tab.Screen name="Shopping List" component={ShoppingListScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="ReviewDetected" component={ReviewDetectedScreen} options={{ title: 'Confirm items' }} />
+    </Stack.Navigator>
   );
 }
