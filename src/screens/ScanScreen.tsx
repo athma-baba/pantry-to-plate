@@ -1,11 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { requestAIAction } from '../aiGating';
 
 export default function ScanScreen({ navigation }: any) {
   const { isDark } = useTheme();
 
-  const simulateDetect = () => {
+  const simulateDetect = async () => {
+    try {
+      const gate = await requestAIAction('scan_ocr');
+      if (!gate.allowed) {
+        navigation.navigate('Paywall');
+        return;
+      }
+    } catch (e) {
+      console.warn('AI gate error', e);
+    }
+
     // example detected items — in real app this comes from OCR
     const detected = [
       { name: 'Milk', quantity: 1, unit: 'ltr', category: 'Dairy', expiryDate: '' },

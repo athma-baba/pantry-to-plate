@@ -3,7 +3,16 @@ import { Preferences } from '../types';
 
 const PREFS_KEY = '@preferences';
 
-const defaults: Preferences = { theme: 'light', units: 'metric' };
+const defaults: Preferences = {
+  theme: 'light',
+  units: 'metric',
+  onboarded: false,
+  diet: '',
+  allergens: [],
+  dislikes: [],
+  timePref: 20,
+  appliances: [],
+};
 
 export const preferencesRepository = {
   async get(): Promise<Preferences> {
@@ -15,8 +24,10 @@ export const preferencesRepository = {
     }
   },
 
-  async save(prefs: Preferences): Promise<void> {
-    await AsyncStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  async save(prefs: Partial<Preferences>): Promise<void> {
+    const curr = await this.get();
+    const merged = { ...curr, ...prefs } as Preferences;
+    await AsyncStorage.setItem(PREFS_KEY, JSON.stringify(merged));
   },
 
   async clear(): Promise<void> {

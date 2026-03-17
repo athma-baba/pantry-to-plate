@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { requestAIAction } from '../aiGating';
 import { pantryRepository } from '../storage/pantryRepository';
 import { LocalMockRecipeService } from '../services/LocalMockRecipeService';
 import { PantryItem, Recipe } from '../types';
@@ -41,7 +42,18 @@ export default function HomeScreen({ navigation }: any) {
         keyExtractor={r => r.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate('Cook')}
+            onPress={async () => {
+              try {
+                const gate = await requestAIAction('recipe_generate');
+                if (!gate.allowed) {
+                  navigation.navigate('Paywall');
+                  return;
+                }
+              } catch (e) {
+                console.warn('AI gate error', e);
+              }
+              navigation.navigate('Cook', { recipeId: item.id });
+            }}
             style={[styles.card, { borderColor: '#e0e0e0' }]}
           >
             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -60,7 +72,19 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={[styles.title, { color: fg }]}>{item.title}</Text>
               <Text style={[styles.desc, { color: isDark ? '#aaa' : '#666' }]}>{item.description}</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Cook')}>
+            <TouchableOpacity
+              onPress={async () => {
+                try {
+                  const gate = await requestAIAction('recipe_generate');
+                  if (!gate.allowed) {
+                    navigation.navigate('Paywall');
+                    return;
+                  }
+                } catch (e) {
+                  console.warn('AI gate error', e);
+                }
+                navigation.navigate('Cook', { recipeId: item.id });
+              }}>
               <Text style={{ color: '#4a90e2' }}>Cook</Text>
             </TouchableOpacity>
           </View>

@@ -11,6 +11,7 @@ import ScanScreen from '../screens/ScanScreen';
 import CookScreen from '../screens/CookScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ReviewDetectedScreen from '../screens/ReviewDetectedScreen';
+import PaywallScreen from '../features/paywall/PaywallScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
@@ -63,6 +64,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="Paywall" component={PaywallScreen} options={{ title: 'Upgrade to Pro' }} />
       <Stack.Screen name="ReviewDetected" component={ReviewDetectedScreen} options={{ title: 'Confirm items' }} />
     </Stack.Navigator>
   );
