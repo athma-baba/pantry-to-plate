@@ -75,6 +75,24 @@ export default function PantryScreen() {
     ]);
   };
 
+  const consumeItem = async (id: string) => {
+    try {
+      await pantryRepository.consume(id, 1);
+      load();
+    } catch (e) {
+      console.warn('consume error', e);
+    }
+  };
+
+  const daysUntil = (iso?: string) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  };
+
   const bg = isDark ? '#121212' : '#fff';
   const fg = isDark ? '#f0f0f0' : '#111';
   const cardBg = isDark ? '#1e1e1e' : '#f5f5f5';
@@ -89,29 +107,57 @@ export default function PantryScreen() {
             No pantry items yet. Tap + to add one.
           </Text>
         }
-        renderItem={({ item }) => (
-          <View style={[styles.card, { backgroundColor: cardBg }]}>
-            <View style={styles.cardMain}>
-              <Text style={[styles.itemName, { color: fg }]}>{item.name}</Text>
-              <Text style={[styles.itemMeta, { color: isDark ? '#aaa' : '#555' }]}>
-                {item.quantity} {item.unit} · {item.category}
-                {item.expiryDate ? ` · exp ${item.expiryDate}` : ''}
-              </Text>
+        renderItem={({ item }) => {
+          const days = daysUntil(item.expiryDate);
+          let badgeText = '';
+          let badgeStyle: any = {};
+          if (days === null) {
+            badgeText = '';
+          } else if (days < 0) {
+            badgeText = 'Expired';
+            badgeStyle = styles.badgeExpired;
+          } else if (days === 0) {
+            badgeText = 'Expires today';
+            badgeStyle = styles.badgeUrgent;
+          } else if (days <= 3) {
+            badgeText = `Expiring in ${days}d`;
+            badgeStyle = styles.badgeSoon;
+          } else {
+            badgeText = `Expires in ${days}d`;
+            badgeStyle = styles.badgeNeutral;
+          }
+
+          return (
+            <View style={[styles.card, { backgroundColor: cardBg }]}>
+              <View style={styles.cardMain}>
+                <Text style={[styles.itemName, { color: fg }]}>{item.name}</Text>
+                <Text style={[styles.itemMeta, { color: isDark ? '#aaa' : '#555' }]}>
+                  {item.quantity} {item.unit} · {item.category}
+                </Text>
+                {item.expiryDate ? (
+                  <View style={[styles.badge, badgeStyle]}>
+                    <Text style={styles.badgeText}>{badgeText}</Text>
+                  </View>
+                ) : null}
+              </View>
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setForm(item);
+                    setModalVisible(true);
+                  }}>
+                  <Text style={styles.actionEdit}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => consumeItem(item.id)}>
+                  <Text style={[styles.actionEdit, { color: '#27ae60' }]}>Consume</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => deleteItem(item.id)}>
+                  <Text style={styles.actionDelete}>Delete</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.cardActions}>
-              <TouchableOpacity
-                onPress={() => {
-                  setForm(item);
-                  setModalVisible(true);
-                }}>
-                <Text style={styles.actionEdit}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteItem(item.id)}>
-                <Text style={styles.actionDelete}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+          );
+        }}
       />
       <TouchableOpacity style={styles.fab} onPress={openAdd}>
         <Text style={styles.fabText}>+</Text>

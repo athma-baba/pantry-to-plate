@@ -40,4 +40,18 @@ export const pantryRepository = {
   async clear(): Promise<void> {
     await AsyncStorage.removeItem(PANTRY_KEY);
   },
+
+  async consume(id: string, amount = 1): Promise<void> {
+    const items = await this.getAll();
+    const idx = items.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    const item = items[idx];
+    const newQty = (item.quantity || 0) - amount;
+    if (newQty <= 0) {
+      items.splice(idx, 1);
+    } else {
+      items[idx] = { ...item, quantity: newQty };
+    }
+    await this.save(items);
+  },
 };

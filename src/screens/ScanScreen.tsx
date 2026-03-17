@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { requestAIAction } from '../aiGating';
+import { detectItemsFromImage } from '../services/ocr';
 
 export default function ScanScreen({ navigation }: any) {
   const { isDark } = useTheme();
@@ -17,12 +18,15 @@ export default function ScanScreen({ navigation }: any) {
       console.warn('AI gate error', e);
     }
 
-    // example detected items — in real app this comes from OCR
-    const detected = [
-      { name: 'Milk', quantity: 1, unit: 'ltr', category: 'Dairy', expiryDate: '' },
-      { name: 'Spinach', quantity: 1, unit: 'bunch', category: 'Produce', expiryDate: '' },
-    ];
-    navigation.navigate('ReviewDetected', { items: detected });
+    // In a real app we would capture an image and pass the URI here to an OCR
+    // implementation (ML Kit / Vision). For now, call the stubbed OCR service.
+    try {
+      const detected = await detectItemsFromImage();
+      navigation.navigate('ReviewDetected', { items: detected });
+    } catch (e) {
+      console.warn('OCR detect error', e);
+      Alert.alert('OCR error', 'Could not detect items');
+    }
   };
 
   const bg = isDark ? '#121212' : '#fff';
