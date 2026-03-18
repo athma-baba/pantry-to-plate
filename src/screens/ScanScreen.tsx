@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { requestAIAction } from '../aiGating';
 import { detectItemsFromImage } from '../services/ocr';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 
 export default function ScanScreen({ navigation }: any) {
   const { isDark } = useTheme();
@@ -29,6 +30,66 @@ export default function ScanScreen({ navigation }: any) {
     }
   };
 
+  const openGallery = async () => {
+    try {
+      const gate = await requestAIAction('scan_ocr');
+      if (!gate.allowed) {
+        navigation.navigate('Paywall');
+        return;
+      }
+    } catch (e) {
+      console.warn('AI gate error', e);
+    }
+
+    try {
+      const res = await launchImageLibrary({ mediaType: 'photo', includeBase64: true, quality: 0.8 });
+      if (res.didCancel) return;
+      if (res.errorCode) {
+        Alert.alert('Image picker error', res.errorMessage || 'Unknown error');
+        return;
+      }
+      const asset = res.assets && res.assets[0];
+      if (!asset) return;
+      const base64 = asset.base64;
+      const dataUrl = base64 ? `data:${asset.type};base64,${base64}` : asset.uri;
+      const detected = await detectItemsFromImage(dataUrl as string);
+      navigation.navigate('ReviewDetected', { items: detected });
+    } catch (e) {
+      console.warn('Gallery import error', e);
+      Alert.alert('Import error', 'Could not import image');
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const gate = await requestAIAction('scan_ocr');
+      if (!gate.allowed) {
+        navigation.navigate('Paywall');
+        return;
+      }
+    } catch (e) {
+      console.warn('AI gate error', e);
+    }
+
+    try {
+      const res = await launchCamera({ mediaType: 'photo', includeBase64: true, quality: 0.8 });
+      if (res.didCancel) return;
+      if (res.errorCode) {
+        Alert.alert('Camera error', res.errorMessage || 'Unknown error');
+        return;
+      }
+      const asset = res.assets && res.assets[0];
+      if (!asset) return;
+      const base64 = asset.base64;
+      const dataUrl = base64 ? `data:${asset.type};base64,${base64}` : asset.uri;
+      const detected = await detectItemsFromImage(dataUrl as string);
+      navigation.navigate('ReviewDetected', { items: detected });
+    } catch (e) {
+      console.warn('Camera error', e);
+      Alert.alert('Camera error', 'Could not capture photo');
+    }
+  };
+
   const bg = isDark ? '#121212' : '#fff';
 
   return (
@@ -38,11 +99,12 @@ export default function ScanScreen({ navigation }: any) {
         <Text style={styles.btnText}>Simulate detection</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.btn, { marginTop: 12, backgroundColor: '#eee' }]}
-        onPress={() => Alert.alert('Open gallery not implemented')}
-      >
+      <TouchableOpacity style={[styles.btn, { marginTop: 12, backgroundColor: '#eee' }]} onPress={openGallery}>
         <Text style={{ color: '#111' }}>Import from gallery</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.btn, { marginTop: 12, backgroundColor: '#eee' }]} onPress={takePhoto}>
+        <Text style={{ color: '#111' }}>Take photo</Text>
       </TouchableOpacity>
     </View>
   );
