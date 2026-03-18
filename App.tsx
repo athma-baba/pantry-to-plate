@@ -16,6 +16,7 @@ import { SubscriptionProvider } from './src/store/SubscriptionProvider';
 import { preferencesRepository } from './src/storage/preferencesRepository';
 import OnboardingWelcome from './src/screens/OnboardingWelcome';
 import OnboardingDietAllergens from './src/screens/OnboardingDietAllergens';
+import { initSentry } from './src/init/sentry';
 
 const RootStack = createNativeStackNavigator();
 
@@ -30,6 +31,8 @@ function Inner() {
 }
 
 function App() {
+  // Initialize Sentry with DSN from env (set in .env or runtime config)
+  initSentry(process.env.SENTRY_DSN as string | undefined);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
