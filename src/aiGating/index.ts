@@ -1,6 +1,6 @@
 // src/aiGating/index.ts
 // Uses the aiGate service to consume an AI action (server-backed when possible)
-import { consumeAIAction, getLocalAICounts } from './services/aiGate';
+import { consumeAIAction, getLocalAICounts } from '../services/aiGate';
 
 export type AIGateResult =
   | { allowed: true; remainingFree?: number }

@@ -1,9 +1,9 @@
-import admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
 const FREE_LIFETIME = Number(process.env.FREE_LIFETIME) || 10;
 
-export async function consumeAIActionHandler(data: any, context: functions.https.CallableContext) {
+export async function consumeAIActionHandler(data: any, context: any) {
   const uid = context.auth?.uid;
   if (!uid) {
     return { allowed: false, reason: 'auth' };
